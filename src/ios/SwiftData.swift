@@ -642,7 +642,7 @@ public struct SwiftData {
         }
         let imageID = UUID().uuidString
         let imagePath = imageDirPath.appendingFormat("/%@", imageID); //imageDirPath.stringByAppendingPathComponent(imageID)
-        let imageAsData = UIImagePNGRepresentation(image)
+        let imageAsData = image.pngData()
         if let _ = imageAsData
         {
             if !((try? imageAsData!.write(to: URL(fileURLWithPath: imagePath), options: [.atomic])) != nil) {
