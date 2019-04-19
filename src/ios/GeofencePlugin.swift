@@ -394,9 +394,6 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         case .inside:
             handleTransition(region, transitionType: 1)
             break
-        case .outside:
-            handleTransition(region, transitionType: 2)
-            break
         default:
             break
         }
