@@ -28,7 +28,6 @@ func log(_ messages: [String]) {
 @available(iOS 8.0, *)
 @objc(HWPGeofencePlugin) class GeofencePlugin : CDVPlugin {
     lazy var geoNotificationManager = GeoNotificationManager()
-    let priority = DispatchQueue.GlobalQueuePriority.default
 
     override func pluginInitialize () {
         NotificationCenter.default.addObserver(
@@ -46,47 +45,53 @@ func log(_ messages: [String]) {
         )
     }
 
+    @objc(initialize:)
     func initialize(_ command: CDVInvokedUrlCommand) {
-        log("Plugin initialization")
-        //let faker = GeofenceFaker(manager: geoNotificationManager)
-        //faker.start()
-        if iOS8 {
-            promptForNotificationPermission()
+        DispatchQueue.main.async {
+            log("Plugin initialization")
+            //let faker = GeofenceFaker(manager: geoNotificationManager)
+            //faker.start()
+            if iOS8 {
+                self.promptForNotificationPermission()
+            }
+
+            self.geoNotificationManager = GeoNotificationManager()
+            self.geoNotificationManager.registerPermissions()
+
+            let (ok, warnings, errors) = self.geoNotificationManager.checkRequirements()
+
+            log(warnings)
+            log(errors)
+
+            let result: CDVPluginResult
+
+            if ok {
+                result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: warnings.joined(separator: "\n"))
+            } else {
+                result = CDVPluginResult(
+                    status: CDVCommandStatus_ILLEGAL_ACCESS_EXCEPTION,
+                    messageAs: (errors + warnings).joined(separator: "\n")
+                )
+            }
+
+            self.commandDelegate!.send(result, callbackId: command.callbackId)
         }
-
-        geoNotificationManager = GeoNotificationManager()
-        geoNotificationManager.registerPermissions()
-
-        let (ok, warnings, errors) = geoNotificationManager.checkRequirements()
-
-        log(warnings)
-        log(errors)
-
-        let result: CDVPluginResult
-
-        if ok {
-            result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: warnings.joined(separator: "\n"))
-        } else {
-            result = CDVPluginResult(
-                status: CDVCommandStatus_ILLEGAL_ACCESS_EXCEPTION,
-                messageAs: (errors + warnings).joined(separator: "\n")
-            )
-        }
-
-        commandDelegate!.send(result, callbackId: command.callbackId)
     }
 
+    @objc(deviceReady:)
     func deviceReady(_ command: CDVInvokedUrlCommand) {
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
         commandDelegate!.send(pluginResult, callbackId: command.callbackId)
     }
 
+    @objc(ping:)
     func ping(_ command: CDVInvokedUrlCommand) {
         log("Ping")
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
         commandDelegate!.send(pluginResult, callbackId: command.callbackId)
     }
 
+    @objc(promptForNotificationPermission)
     func promptForNotificationPermission() {
         UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(
             types: [UIUserNotificationType.sound, UIUserNotificationType.alert, UIUserNotificationType.badge],
@@ -95,21 +100,20 @@ func log(_ messages: [String]) {
         )
     }
 
+    @objc(addOrUpdate:)
     func addOrUpdate(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(priority: priority).async {
-            // do some task
+        DispatchQueue.main.async {
             for geo in command.arguments {
                 self.geoNotificationManager.addOrUpdateGeoNotification(JSON(geo))
             }
-            DispatchQueue.main.async {
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-                self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
-            }
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
         }
     }
 
+    @objc(getWatched:)
     func getWatched(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(priority: priority).async {
+        DispatchQueue.global().async {
             let watched = self.geoNotificationManager.getWatchedGeoNotifications()!
             let watchedJsonString = watched.description
             DispatchQueue.main.async {
@@ -119,8 +123,9 @@ func log(_ messages: [String]) {
         }
     }
 
+    @objc(remove:)
     func remove(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(priority: priority).async {
+        DispatchQueue.global().async {
             for id in command.arguments {
                 self.geoNotificationManager.removeGeoNotification(id as! String)
             }
@@ -131,8 +136,9 @@ func log(_ messages: [String]) {
         }
     }
 
+    @objc(removeAll:)
     func removeAll(_ command: CDVInvokedUrlCommand) {
-        DispatchQueue.global(priority: priority).async {
+        DispatchQueue.global().async {
             self.geoNotificationManager.removeAllGeoNotifications()
             DispatchQueue.main.async {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
@@ -190,7 +196,7 @@ class GeofenceFaker {
     }
 
     func start() {
-         DispatchQueue.global(priority: priority).async {
+        DispatchQueue.global(priority: priority).async {
             while (true) {
                 log("FAKER")
                 let notify = arc4random_uniform(4)
@@ -378,11 +384,22 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
             let radius = (region as! CLCircularRegion).radius
 
             log("Starting monitoring for region \(region) lat \(lat) lng \(lng) of radius \(radius)")
+            locationManager.requestState(for: region)
         }
     }
 
     func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
         log("State for region " + region.identifier)
+        switch state{
+        case .inside:
+            handleTransition(region, transitionType: 1)
+            break
+        case .outside:
+            handleTransition(region, transitionType: 2)
+            break
+        default:
+            break
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
