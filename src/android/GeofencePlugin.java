@@ -26,7 +26,12 @@ public class GeofencePlugin extends CordovaPlugin {
     public static final String ERROR_PERMISSION_DENIED = "PERMISSION_DENIED";
     public static final String ERROR_GEOFENCE_NOT_AVAILABLE = "GEOFENCE_NOT_AVAILABLE";
     public static final String ERROR_GEOFENCE_LIMIT_EXCEEDED = "GEOFENCE_LIMIT_EXCEEDED";
-
+    public enum LocationPermission 
+    { 
+        ALWAYS = 1, 
+        RESTRICTED = 2, 
+        WHEN_IN_USE = 3
+    } 
     private GeoNotificationManager geoNotificationManager;
     private Context context;
     public static CordovaWebView webView = null;
@@ -116,7 +121,16 @@ public class GeofencePlugin extends CordovaPlugin {
         if (webView == null) {
             Log.d(TAG, "Webview is null");
         } else {
-            webView.sendJavascript(js);
+            sendJavascript(js);
+        }
+    }
+
+    public static void onLocatonPermissionChange(LocationPermission locationPermission) {
+        String js = "setTimeout(()=>{geofence.onLocatonPermissionChange({ locationPermission: " + locationPermission + " })},0)";
+        if (webView == null) {
+            Log.d(TAG, "Webview is null");
+        } else {
+            sendJavascript(js);
         }
     }
 
@@ -128,7 +142,7 @@ public class GeofencePlugin extends CordovaPlugin {
         if (data == null) {
             Log.d(TAG, "No notifications clicked.");
         } else {
-            webView.sendJavascript(js);
+            sendJavascript(js);
         }
     }
 
@@ -141,6 +155,7 @@ public class GeofencePlugin extends CordovaPlugin {
         if (!hasPermissions(permissions)) {
             PermissionHelper.requestPermissions(this, 0, permissions);
         } else {
+            onLocatonPermissionChange(LocationPermission.ALWAYS);
             callbackContext.success();
         }
     }
@@ -168,8 +183,24 @@ public class GeofencePlugin extends CordovaPlugin {
                 }
             }
             Log.d(TAG, "Permission Granted!");
+            onLocatonPermissionChange(LocationPermission.ALWAYS);
             execute(executedAction);
             executedAction = null;
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private static void sendJavascript(final String javascript) {
+
+        webView.getView().post(new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    webView.sendJavascript(javascript);
+                } else {
+                    webView.loadUrl("javascript:" + javascript);
+                }
+            }
+        });
     }
 }

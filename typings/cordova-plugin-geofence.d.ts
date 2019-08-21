@@ -4,6 +4,10 @@ interface TransitionType {
   BOTH: number;
 }
 
+interface PermissionData {
+  locationPermission: number;
+}
+
 interface Window {
   geofence: GeofencePlugin;
   TransitionType: TransitionType;
@@ -38,7 +42,7 @@ interface GeofencePlugin {
   ): Promise<string>;
 
   onTransitionReceived: (geofences: Geofence[]) => void;
-  
+  onLocationPermissionChange: (permissionData: PermissionData) => void;
   onNotificationClicked: (notificationData: Object) => void;
 }
 
