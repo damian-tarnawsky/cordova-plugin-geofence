@@ -56,6 +56,7 @@ func log(_ messages: [String]) {
             }
 
             self.geoNotificationManager = GeoNotificationManager()
+            self.geoNotificationManager.evaluateJs = self.evaluateJs;
             self.geoNotificationManager.registerPermissions()
 
             let (ok, warnings, errors) = self.geoNotificationManager.checkRequirements()
@@ -151,7 +152,7 @@ func log(_ messages: [String]) {
         log("didReceiveTransition")
         if let geoNotificationString = notification.object as? String {
 
-            let js = "setTimeout('geofence.onTransitionReceived([" + geoNotificationString + "])',0)"
+            let js = "setTimeout(()=>{geofence.onTransitionReceived([" + geoNotificationString + "])},0)"
 
             evaluateJs(js)
         }
@@ -165,7 +166,7 @@ func log(_ messages: [String]) {
                 if let notificationData = uiNotification.userInfo?["geofence.notification.data"] as? String {
                     data = notificationData
                 }
-                let js = "setTimeout('geofence.onNotificationClicked(" + data + ")',0)"
+                let js = "setTimeout(()=>{geofence.onNotificationClicked(" + data + ")},0)"
 
                 evaluateJs(js)
             }
@@ -233,6 +234,7 @@ class GeofenceFaker {
 class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     let locationManager = CLLocationManager()
     let store = GeoNotificationStore()
+    var evaluateJs: ((String) -> Void)?
 
     override init() {
         log("GeoNotificationManager init")
@@ -275,6 +277,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         //store
         store.addOrUpdate(geoNotification)
         locationManager.startMonitoring(for: region)
+        locationManager.startUpdatingLocation()
     }
 
     func checkRequirements() -> (Bool, [String], [String]) {
@@ -403,6 +406,23 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         log("Monitoring region " + region!.identifier + " failed \(error)" )
     }
 
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        switch status {
+            case .authorizedAlways:
+                // The user accepted the location permission popup. Notify TypeScript to add the geofences into this plugin.
+                self.evaluateJs?("setTimeout(()=>{geofence.onLocationPermissionAuthorized()},0)")
+                break
+            case .notDetermined:
+                break
+            case .denied:
+                break
+            case .restricted:
+                break
+            case .authorizedWhenInUse:
+                break
+        }
+    }
+
     func handleTransition(_ region: CLRegion!, transitionType: Int) {
         if var geoNotification = store.findById(region.identifier) {
             geoNotification["transitionType"].int = transitionType
@@ -418,7 +438,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     /* This should call the URL with method (eg POST) and postData */
     func callUrl(geo: JSON, transitionType: Int) {
         let method = "POST";
-        let url = geo["notification"]["url"].stringValue;    
+        let url = geo["notification"]["url"].stringValue;
         let deviceToken = geo["notification"]["deviceToken"].stringValue;
         let corpProp = geo["notification"]["corpProp"].stringValue;
         let clientID = geo["notification"]["clientID"].stringValue;
@@ -426,12 +446,29 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         if (transitionType == 2) {
             postData = geo["notification"]["bodyExit"].stringValue;
         }
+        
+        do {
+            let jsonDecoder = JSONDecoder()
+            var decodedData = try jsonDecoder.decode(postBody.self, from: postData.data(using: String.Encoding.utf8)!)
+            let date = Date()
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
+            formatter.timeZone = TimeZone.current
+            decodedData.timeOfEvent = formatter.string(from: date);
+            decodedData.latitude = locationManager.location.coordinate.latitude
+            decodedData.longitude = locationManager.location.coordinate.longitude
+            let jsonEncoder = JSONEncoder()
+            let encodedData = try jsonEncoder.encode(decodedData)
+            postData = String(data: encodedData, encoding: .utf8)!
+        } catch {}
+        
         let token = geo["notification"]["token"].stringValue;
         log("callUrl "+url)
         let urlString = url;
         guard let endpointUrl = URL(string: urlString) else {
             return
         }
+
         var request = URLRequest(url: endpointUrl)
         request.httpMethod = method
         request.httpBody = postData.data(using: String.Encoding.utf8);

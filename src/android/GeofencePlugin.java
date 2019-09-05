@@ -116,7 +116,16 @@ public class GeofencePlugin extends CordovaPlugin {
         if (webView == null) {
             Log.d(TAG, "Webview is null");
         } else {
-            webView.sendJavascript(js);
+            sendJavascript(js);
+        }
+    }
+
+    public static void onLocatonPermissionAuthorized() {
+        String js = "setTimeout(()=>{geofence.onLocatonPermissionChange()},0)";
+        if (webView == null) {
+            Log.d(TAG, "Webview is null");
+        } else {
+            sendJavascript(js);
         }
     }
 
@@ -128,7 +137,7 @@ public class GeofencePlugin extends CordovaPlugin {
         if (data == null) {
             Log.d(TAG, "No notifications clicked.");
         } else {
-            webView.sendJavascript(js);
+            sendJavascript(js);
         }
     }
 
@@ -141,6 +150,7 @@ public class GeofencePlugin extends CordovaPlugin {
         if (!hasPermissions(permissions)) {
             PermissionHelper.requestPermissions(this, 0, permissions);
         } else {
+            onLocatonPermissionAuthorized();
             callbackContext.success();
         }
     }
@@ -168,8 +178,24 @@ public class GeofencePlugin extends CordovaPlugin {
                 }
             }
             Log.d(TAG, "Permission Granted!");
+            onLocatonPermissionAuthorized();
             execute(executedAction);
             executedAction = null;
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private static void sendJavascript(final String javascript) {
+
+        webView.getView().post(new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    webView.sendJavascript(javascript);
+                } else {
+                    webView.loadUrl("javascript:" + javascript);
+                }
+            }
+        });
     }
 }

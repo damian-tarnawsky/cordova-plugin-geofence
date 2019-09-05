@@ -108,6 +108,13 @@ public class ReceiveTransitionsIntentService extends IntentService {
             if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
                 data = notification.bodyExit;
             }
+
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault());
+            dateFormat.setTimeZone(TimeZone.getDefault());
+            JSONObject jsonObj = new JSONObject(data);
+            jsonObj.put("timeOfEvent", dateFormat.format(new Date()));
+            data = jsonObj.toString();
+
             OkHttpClient client = new OkHttpClient();
             MediaType JSON = MediaType.parse("application/json; charset=utf-8");
             RequestBody body = RequestBody.create(JSON, data);
