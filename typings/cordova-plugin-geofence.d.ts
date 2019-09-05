@@ -4,10 +4,6 @@ interface TransitionType {
   BOTH: number;
 }
 
-interface PermissionData {
-  locationPermission: number;
-}
-
 interface Window {
   geofence: GeofencePlugin;
   TransitionType: TransitionType;
