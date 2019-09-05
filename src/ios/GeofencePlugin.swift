@@ -14,11 +14,6 @@ import CoreLocation
 let TAG = "GeofencePlugin"
 let iOS8 = floor(NSFoundationVersionNumber) > floor(NSFoundationVersionNumber_iOS_7_1)
 let iOS7 = floor(NSFoundationVersionNumber) <= floor(NSFoundationVersionNumber_iOS_7_1)
-enum LocationPermission: Int {
-    case ALWAYS = 0
-    case RESTRICTED = 1
-    case WHEN_IN_USE = 2
-}
 
 func log(_ message: String){
     NSLog("%@ - %@", TAG, message)
@@ -414,15 +409,15 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         switch status {
             case .authorizedAlways:
                 // The user accepted the location permission popup. Notify TypeScript to add the geofences into this plugin.
-                self.evaluateJs?("setTimeout(()=>{geofence.onLocationPermissionChange({ locationPermission: " + LocationPermission.ALWAYS + " })},0)")
+                self.evaluateJs?("setTimeout(()=>{geofence.onLocationPermissionAuthorized()},0)")
                 break
             case .notDetermined:
+                break
             case .denied:
+                break
             case .restricted:
-                self.evaluateJs?("setTimeout(()=>{geofence.onLocationPermissionChange({ locationPermission: " + LocationPermission.RESTRICTED + " })},0)")
                 break
             case .authorizedWhenInUse:
-                self.evaluateJs?("setTimeout(()=>{geofence.onLocationPermissionChange({ locationPermission: " + LocationPermission.WHEN_IN_USE + " })},0)")
                 break
         }
     }
@@ -442,29 +437,38 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     /* This should call the URL with method (eg POST) and postData */
     func callUrl(geo: JSON, transitionType: Int) {
         let method = "POST";
-        let url = geo["notification"]["url"].stringValue;    
+        let url = geo["notification"]["url"].stringValue;
         let deviceToken = geo["notification"]["deviceToken"].stringValue;
         let corpProp = geo["notification"]["corpProp"].stringValue;
         let clientID = geo["notification"]["clientID"].stringValue;
-        let postData = geo["notification"]["bodyEnter"];
+        var postData = geo["notification"]["bodyEnter"].stringValue;
         if (transitionType == 2) {
-            postData = geo["notification"]["bodyExit"];
+            postData = geo["notification"]["bodyExit"].stringValue;
         }
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
-        formatter.timeZone = TimeZone.current
-        postData["timeOfEvent"].stringValue = formatter.string(from: Date());
-
+        
+        do {
+            let jsonDecoder = JSONDecoder()
+            var decodedData = try jsonDecoder.decode(postBody.self, from: postData.data(using: String.Encoding.utf8)!)
+            let date = Date()
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
+            formatter.timeZone = TimeZone.current
+            decodedData.timeOfEvent = formatter.string(from: date);
+            let jsonEncoder = JSONEncoder()
+            let encodedData = try jsonEncoder.encode(decodedData)
+            postData = String(data: encodedData, encoding: .utf8)!
+        } catch {}
+        
         let token = geo["notification"]["token"].stringValue;
         log("callUrl "+url)
         let urlString = url;
         guard let endpointUrl = URL(string: urlString) else {
             return
         }
+
         var request = URLRequest(url: endpointUrl)
         request.httpMethod = method
-        request.httpBody = postData.stringValue.data(using: String.Encoding.utf8);
+        request.httpBody = postData.data(using: String.Encoding.utf8);
         request.addValue("application/json", forHTTPHeaderField: "Content-Type");
         request.addValue("*/*", forHTTPHeaderField: "Accept");
         request.addValue(token, forHTTPHeaderField: "Token");

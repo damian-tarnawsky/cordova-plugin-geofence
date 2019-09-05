@@ -106,12 +106,11 @@ module.exports = {
      */
     onNotificationClicked: function (notificationData) {},
     /**
-     * Called when the app location permissions change
+     * Called when the app location permissions is always
      *
-     * @name onLocationPermissionChange
-     * @param {JSON} permissionData { locationPermission: LocationPermission }
+     * @name onLocationPermissionAuthorized
      */
-    onLocationPermissionChange: function (permissionData) {},
+    onLocationPermissionAuthorized: function () {},
     /**
      * Called when app received geofence transition event
      * @param  {Array} geofences

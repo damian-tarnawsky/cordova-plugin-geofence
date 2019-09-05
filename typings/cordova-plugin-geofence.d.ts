@@ -42,7 +42,7 @@ interface GeofencePlugin {
   ): Promise<string>;
 
   onTransitionReceived: (geofences: Geofence[]) => void;
-  onLocationPermissionChange: (permissionData: PermissionData) => void;
+  onLocationPermissionAuthorized: () => void;
   onNotificationClicked: (notificationData: Object) => void;
 }
 
