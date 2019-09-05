@@ -277,6 +277,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         //store
         store.addOrUpdate(geoNotification)
         locationManager.startMonitoring(for: region)
+        locationManager.startUpdatingLocation()
     }
 
     func checkRequirements() -> (Bool, [String], [String]) {
@@ -454,6 +455,8 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
             formatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
             formatter.timeZone = TimeZone.current
             decodedData.timeOfEvent = formatter.string(from: date);
+            decodedData.latitude = locationManager.location.coordinate.latitude
+            decodedData.longitude = locationManager.location.coordinate.longitude
             let jsonEncoder = JSONEncoder()
             let encodedData = try jsonEncoder.encode(decodedData)
             postData = String(data: encodedData, encoding: .utf8)!
