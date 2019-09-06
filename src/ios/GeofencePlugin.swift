@@ -453,7 +453,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         if (transitionType == 2) {
             postData = geo["notification"]["bodyExit"].stringValue;
         }
-        
+
         do {
             let jsonDecoder = JSONDecoder()
             var decodedData = try jsonDecoder.decode(postBody.self, from: postData.data(using: String.Encoding.utf8)!)
@@ -462,13 +462,13 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
             formatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
             formatter.timeZone = TimeZone.current
             decodedData.timeOfEvent = formatter.string(from: date);
-            decodedData.latitude = locationManager.location.coordinate.latitude
-            decodedData.longitude = locationManager.location.coordinate.longitude
+            decodedData.latitude = Int(locationManager.location!.coordinate.latitude)
+            decodedData.longitude = Int(locationManager.location!.coordinate.longitude)
             let jsonEncoder = JSONEncoder()
             let encodedData = try jsonEncoder.encode(decodedData)
             postData = String(data: encodedData, encoding: .utf8)!
         } catch {}
-        
+
         let token = geo["notification"]["token"].stringValue;
         log("callUrl "+url)
         let urlString = url;
@@ -485,7 +485,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         request.addValue(deviceToken, forHTTPHeaderField: "DeviceToken");
         request.addValue(clientID, forHTTPHeaderField: "Client-ID");
         request.addValue(corpProp, forHTTPHeaderField: "CorpProp");
-        
+
         let task = URLSession.shared.dataTask(with: request) {
             (data, response, error) in
             guard error == nil else {
@@ -498,7 +498,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         }
         task.resume()
     }
-    
+
     func notifyAbout(_ geo: JSON) {
         log("Creating notification")
         let notification = UILocalNotification()
