@@ -14,6 +14,13 @@ import CoreLocation
 let TAG = "GeofencePlugin"
 let iOS8 = floor(NSFoundationVersionNumber) > floor(NSFoundationVersionNumber_iOS_7_1)
 let iOS7 = floor(NSFoundationVersionNumber) <= floor(NSFoundationVersionNumber_iOS_7_1)
+struct postBody: Codable {
+    let eventType: Int
+    var latitude: Int
+    var longitude: Int
+    let placeId: String
+    var timeOfEvent: String
+}
 
 func log(_ message: String){
     NSLog("%@ - %@", TAG, message)
