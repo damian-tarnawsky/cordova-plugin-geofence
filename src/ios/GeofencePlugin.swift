@@ -16,8 +16,8 @@ let iOS8 = floor(NSFoundationVersionNumber) > floor(NSFoundationVersionNumber_iO
 let iOS7 = floor(NSFoundationVersionNumber) <= floor(NSFoundationVersionNumber_iOS_7_1)
 struct postBody: Codable {
     let eventType: Int
-    var latitude: Int
-    var longitude: Int
+    var latitude: Double?
+    var longitude: Double?
     let placeId: String
     var timeOfEvent: String
 }
@@ -462,11 +462,11 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
             formatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
             formatter.timeZone = TimeZone.current
             decodedData.timeOfEvent = formatter.string(from: date);
-            decodedData.latitude = Int(locationManager.location!.coordinate.latitude)
-            decodedData.longitude = Int(locationManager.location!.coordinate.longitude)
+            decodedData.latitude = locationManager.location!.coordinate.latitude
+            decodedData.longitude = locationManager.location!.coordinate.longitude
             let jsonEncoder = JSONEncoder()
             let encodedData = try jsonEncoder.encode(decodedData)
-            postData = String(data: encodedData, encoding: .utf8)!
+            postData = String(data: encodedData, encoding: String.Encoding.utf8)!.replacingOccurrences(of: "\\/", with: "/")
         } catch {}
 
         let token = geo["notification"]["token"].stringValue;
