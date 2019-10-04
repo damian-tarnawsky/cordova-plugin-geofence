@@ -301,8 +301,8 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
 
         let authStatus = CLLocationManager.authorizationStatus()
 
-        if (authStatus != CLAuthorizationStatus.authorizedAlways) {
-            errors.append("Warning: Location always permissions not granted")
+        if (authStatus != CLAuthorizationStatus.authorizedAlways && authStatus != CLAuthorizationStatus.authorizedWhenInUse) {
+            errors.append("Warning: Location permissions not granted")
         }
 
 //        if (iOS8) {
