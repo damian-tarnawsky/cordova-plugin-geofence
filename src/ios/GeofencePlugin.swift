@@ -37,7 +37,7 @@ alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
 
 
 }}))
-self.present(alert, animated: true, completion: nil)
+present(alert, animated: true, completion: nil)
     NSLog("%@ - %@", TAG, message)
 }
 
