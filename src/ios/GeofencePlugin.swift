@@ -23,6 +23,7 @@ struct postBody: Codable {
 }
 
 func log(_ message: String){
+    self.evaluateJs?("console.log("+message+")")
     NSLog("%@ - %@", TAG, message)
 }
 
