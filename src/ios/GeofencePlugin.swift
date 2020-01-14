@@ -52,8 +52,8 @@ func log(_ messages: [String]) {
         )
     }
 
-    func log(_ message: string) {
-        let js = "console.log('"+message +"')"
+    func log(_ message: String) {
+        let js = "console.log('"+message +"')";
         evaluateJs(js)
     }
 
