@@ -395,7 +395,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
             let radius = (region as! CLCircularRegion).radius
 
             log("Starting monitoring for region \(region) lat \(lat) lng \(lng) of radius \(radius)")
-            evaluateJs(console.log(monitoringregion) // REMOVE
+            evaluateJs("console.log(monitoringregion)")// REMOVE
             locationManager.requestState(for: region)
         }
     }
