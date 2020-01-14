@@ -53,7 +53,7 @@ func log(_ messages: [String]) {
     }
 
     func log(_ message: String) {
-        let js = "console.log('"+message +"')";
+        let js = "console.log(\'"+message +"\')";
         evaluateJs(js)
     }
 
