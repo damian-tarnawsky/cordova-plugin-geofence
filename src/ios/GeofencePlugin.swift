@@ -60,7 +60,7 @@ func log(_ messages: [String]) {
     @objc(initialize:)
     func initialize(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.main.async {
-            log2("Plugin initialization")
+            self.log2("Plugin initialization")
 //            let faker = GeofenceFaker(manager: geoNotificationManager)
 //            faker.start()
 //            if iOS8 {
@@ -73,8 +73,8 @@ func log(_ messages: [String]) {
 
             let (ok, warnings, errors) = self.geoNotificationManager.checkRequirements()
 
-            log2(warnings)
-            log2(errors)
+            self.log2(warnings)
+            self.log2(errors)
 
             let result: CDVPluginResult
 
@@ -99,7 +99,7 @@ func log(_ messages: [String]) {
 
     @objc(ping:)
     func ping(_ command: CDVInvokedUrlCommand) {
-        log2("Ping")
+        self.log2("Ping")
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
         commandDelegate!.send(pluginResult, callbackId: command.callbackId)
     }
@@ -161,7 +161,7 @@ func log(_ messages: [String]) {
     }
 
     @objc func didReceiveTransition (_ notification: Notification) {
-        log2("didReceiveTransition")
+        self.log2("didReceiveTransition")
         if let geoNotificationString = notification.object as? String {
 
             let js = "setTimeout(()=>{geofence.onTransitionReceived([" + geoNotificationString + "])},0)"
@@ -171,7 +171,7 @@ func log(_ messages: [String]) {
     }
 
     @objc func didReceiveLocalNotification (_ notification: Notification) {
-        log2("didReceiveLocalNotification")
+        self.log2("didReceiveLocalNotification")
         if UIApplication.shared.applicationState != UIApplication.State.active {
             var data = "undefined"
             if let uiNotification = notification.object as? UILocalNotification {
