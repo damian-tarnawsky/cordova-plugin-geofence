@@ -23,21 +23,6 @@ struct postBody: Codable {
 }
 
 func log(_ message: String){    
-    let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
-alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
-      switch action.style{
-      case .default:
-            print("default")
-
-      case .cancel:
-            print("cancel")
-
-      case .destructive:
-            print("destructive")
-
-
-}}))
-present(alert, animated: true, completion: nil)
     NSLog("%@ - %@", TAG, message)
 }
 
@@ -172,6 +157,7 @@ func log(_ messages: [String]) {
 
     @objc func didReceiveTransition (_ notification: Notification) {
         log("didReceiveTransition")
+        evaluateJs("console.log('didReceiveTransition')") // REMOVE
         if let geoNotificationString = notification.object as? String {
 
             let js = "setTimeout(()=>{geofence.onTransitionReceived([" + geoNotificationString + "])},0)"
@@ -409,6 +395,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
             let radius = (region as! CLCircularRegion).radius
 
             log("Starting monitoring for region \(region) lat \(lat) lng \(lng) of radius \(radius)")
+            evaluateJs("console.log('monitoring region')") // REMOVE
             locationManager.requestState(for: region)
         }
     }
@@ -448,7 +435,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
     func handleTransition(_ region: CLRegion!, transitionType: Int) {
         if var geoNotification = store.findById(region.identifier) {
             geoNotification["transitionType"].int = transitionType
-
+            evaluateJs("console.log('handleTransition')") // REMOVE
             if geoNotification["notification"].isExists() {
                 callUrl(geo: geoNotification, transitionType: transitionType)
                 //notifyAbout(geoNotification)
