@@ -57,6 +57,13 @@ func log(_ messages: [String]) {
         evaluateJs(js)
     }
 
+    func log2(_ messages: [String]) {
+    for message in messages {
+        let js = "console.log(" + message + ")";
+        evaluateJs(js)
+    }
+}
+
     @objc(initialize:)
     func initialize(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.main.async {
