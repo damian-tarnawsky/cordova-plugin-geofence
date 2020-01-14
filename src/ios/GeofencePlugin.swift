@@ -158,7 +158,7 @@ func log(_ messages: [String]) {
     @objc func didReceiveTransition (_ notification: Notification) {
         log("didReceiveTransition")
         let j = "console.log(didReceiveTransition)"
-        evaluateJs(j) // REMOVE
+        evaluateJs(j)
         if let geoNotificationString = notification.object as? String {
 
             let js = "setTimeout(()=>{geofence.onTransitionReceived([" + geoNotificationString + "])},0)"
@@ -397,7 +397,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
 
             log("Starting monitoring for region \(region) lat \(lat) lng \(lng) of radius \(radius)")
             let j = "console.log(monitoringregion)"
-            evaluateJs(j)// REMOVE
+            evaluateJs(j)
             locationManager.requestState(for: region)
         }
     }
@@ -438,7 +438,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         if var geoNotification = store.findById(region.identifier) {
             geoNotification["transitionType"].int = transitionType            
             let j = "console.log(handleTransition)"
-            evaluateJs(j) // REMOVE
+            self.evaluateJs?(j)
             if geoNotification["notification"].isExists() {
                 callUrl(geo: geoNotification, transitionType: transitionType)
                 //notifyAbout(geoNotification)
