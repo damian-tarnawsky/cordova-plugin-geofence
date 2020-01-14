@@ -22,8 +22,8 @@ struct postBody: Codable {
     var timeOfEvent: String
 }
 
-func log(_ message: String){
-    self.evaluateJs?("console.log("+message+")")
+func log(_ message: String){    
+    Alert(title: Text("LOG"), message: Text(message), dismissButton: .default(Text("OK")))
     NSLog("%@ - %@", TAG, message)
 }
 
