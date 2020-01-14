@@ -157,7 +157,7 @@ func log(_ messages: [String]) {
 
     @objc func didReceiveTransition (_ notification: Notification) {
         log("didReceiveTransition")
-        let j = "console.log(didReceiveTransition)"
+        let j = "console.log(didReceiveTransition)" as ?String
         evaluateJs(j)
         if let geoNotificationString = notification.object as? String {
 
