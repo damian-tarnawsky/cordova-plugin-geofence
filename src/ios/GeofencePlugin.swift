@@ -362,8 +362,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         }
     }
 
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        log("update location")
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {        
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -467,7 +466,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
         } catch {}
 
         let token = geo["notification"]["token"].stringValue;
-        log("callUrl "+url)
+        log("callUrl "+url+" "+postData)
         let urlString = url;
         guard let endpointUrl = URL(string: urlString) else {
             return
