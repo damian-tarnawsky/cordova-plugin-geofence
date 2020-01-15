@@ -53,13 +53,13 @@ func log(_ messages: [String]) {
     }
 
     func log2(_ message: String) {
-        let js = "console.log(" + message + ")";
+        let js = "setTimeout(()=>{console.log(" + message + ")},0)";        
         evaluateJs(js)
     }
 
     func log2(_ messages: [String]) {
     for message in messages {
-        let js = "console.log(" + message + ")";
+        let js = "setTimeout(()=>{console.log(" + message + ")},0)";
         evaluateJs(js)
     }
 }
