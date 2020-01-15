@@ -5,7 +5,6 @@
 //  Created by tomasz on 07/10/14.
 //
 //
-
 import Foundation
 import AudioToolbox
 import WebKit
@@ -22,7 +21,7 @@ struct postBody: Codable {
     var timeOfEvent: String
 }
 
-func log(_ message: String){    
+func log(_ message: String){
     NSLog("%@ - %@", TAG, message)
 }
 
@@ -51,7 +50,6 @@ func log(_ messages: [String]) {
             object: nil
         )
     }
-}
 
     @objc(initialize:)
     func initialize(_ command: CDVInvokedUrlCommand) {
@@ -62,7 +60,6 @@ func log(_ messages: [String]) {
 //            if iOS8 {
 //                self.promptForNotificationPermission()
 //            }
-
             self.geoNotificationManager = GeoNotificationManager()
             self.geoNotificationManager.evaluateJs = self.evaluateJs;
             self.geoNotificationManager.registerPermissions()
@@ -327,7 +324,6 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
 //                errors.append("Error: notification permission missing")
 //            }
 //        }
-
         let ok = (errors.count == 0)
 
         return (ok, warnings, errors)
@@ -433,7 +429,7 @@ class GeoNotificationManager : NSObject, CLLocationManagerDelegate {
 
     func handleTransition(_ region: CLRegion!, transitionType: Int) {
         if var geoNotification = store.findById(region.identifier) {
-            geoNotification["transitionType"].int = transitionType            
+            geoNotification["transitionType"].int = transitionType
 
             if geoNotification["notification"].isExists() {
                 callUrl(geo: geoNotification, transitionType: transitionType)
