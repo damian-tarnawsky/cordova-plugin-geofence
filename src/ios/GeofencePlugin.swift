@@ -51,23 +51,12 @@ func log(_ messages: [String]) {
             object: nil
         )
     }
-
-    func log2(_ message: String) {
-        let js = "setTimeout(()=>{console.log(" + message + ")},0)";        
-        evaluateJs(js)
-    }
-
-    func log2(_ messages: [String]) {
-    for message in messages {
-        let js = "setTimeout(()=>{console.log(" + message + ")},0)";
-        evaluateJs(js)
-    }
 }
 
     @objc(initialize:)
     func initialize(_ command: CDVInvokedUrlCommand) {
         DispatchQueue.main.async {
-            self.log2("Plugin initialization")
+            log("Plugin initialization")
 //            let faker = GeofenceFaker(manager: geoNotificationManager)
 //            faker.start()
 //            if iOS8 {
@@ -80,8 +69,8 @@ func log(_ messages: [String]) {
 
             let (ok, warnings, errors) = self.geoNotificationManager.checkRequirements()
 
-            self.log2(warnings)
-            self.log2(errors)
+            log(warnings)
+            log(errors)
 
             let result: CDVPluginResult
 
@@ -106,7 +95,7 @@ func log(_ messages: [String]) {
 
     @objc(ping:)
     func ping(_ command: CDVInvokedUrlCommand) {
-        self.log2("Ping")
+        log("Ping")
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
         commandDelegate!.send(pluginResult, callbackId: command.callbackId)
     }
@@ -168,7 +157,7 @@ func log(_ messages: [String]) {
     }
 
     @objc func didReceiveTransition (_ notification: Notification) {
-        self.log2("didReceiveTransition")
+        log("didReceiveTransition")
         if let geoNotificationString = notification.object as? String {
 
             let js = "setTimeout(()=>{geofence.onTransitionReceived([" + geoNotificationString + "])},0)"
@@ -178,7 +167,7 @@ func log(_ messages: [String]) {
     }
 
     @objc func didReceiveLocalNotification (_ notification: Notification) {
-        self.log2("didReceiveLocalNotification")
+        log("didReceiveLocalNotification")
         if UIApplication.shared.applicationState != UIApplication.State.active {
             var data = "undefined"
             if let uiNotification = notification.object as? UILocalNotification {
